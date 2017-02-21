@@ -11,7 +11,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.sound.midi.Track;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/api")
@@ -29,7 +31,10 @@ class TrackRestController {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/trackings")
 	Collection<TrackingModel> readTrackings() {
-		return null;
+		TrackingModel trackingModel = new TrackingModel();
+		trackingModel.setDate(new Date());
+		trackingModel.setNumDays(5);
+		return Arrays.asList(trackingModel);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/tracking/{idTracking}")
