@@ -5,8 +5,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.util.Arrays;
-
 @SpringBootApplication
 public class Application {
 
@@ -15,7 +13,7 @@ public class Application {
     }
 
     @Bean
-    CommandLineRunner init(TrackingRepository trackingRepository, TrackRepository trackRepository) {
+    CommandLineRunner init() {
         //Initial Method Endpoint
         return null;
     }

@@ -1,58 +1,61 @@
 package mudanzas;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.bind.annotation.*;
 
-import javax.sound.midi.Track;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
 class TrackRestController {
 
-	private final TrackRepository trackRepository;
-
-	private final TrackingRepository trackingRepository;
+	private final int MIN_WEIGHT = 50;
 
 	@Autowired
-	TrackRestController(TrackRepository trackRepository, TrackingRepository trackingRepository) {
-		this.trackRepository = trackRepository;
-		this.trackingRepository = trackingRepository;
+	TrackRestController() {
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/trackings")
-	Collection<TrackingModel> readTrackings() {
-		TrackingModel trackingModel = new TrackingModel();
-		trackingModel.setDate(new Date());
-		trackingModel.setNumDays(5);
-		return Arrays.asList(trackingModel);
-	}
+	@RequestMapping(method = RequestMethod.POST, value = "/trackings")
+	Collection<ResultJsonDto> readTrackings(@RequestBody DataDto data) {
+		List<ResultJsonDto> listResultJsonDto = new ArrayList<ResultJsonDto>();
 
-	@RequestMapping(method = RequestMethod.GET, value = "/tracking/{idTracking}")
-	TrackingModel readTrackingId(@PathVariable Long idTracking) {
-		return null;
-	}
+		Integer totalWeight = 0;
 
-	@RequestMapping(method = RequestMethod.GET, value = "/tracking/{idTracking}/tracks")
-	Collection<TrackModel> readTracks() {
-		return null;
-	}
+		for (int _index = 0; _index < data.getItems().size(); _index++){
+			ResultJsonDto resultJsonDto = new ResultJsonDto();
+			DataItemDto weightItems = data.getItems().get(_index);
+			List<Integer> weightItemsAux = new ArrayList<>(data.getItems().get(_index).getValues());
 
-	@RequestMapping(method = RequestMethod.GET, value = "/tracking/{idTracking}/track/{idTrack}")
-	TrackModel readTrackId(@PathVariable Long idTrack) {
-		return null;
-	}
+			Collections.sort(weightItems.getValues());
 
-	private void validateTracking(int idLoader) {
-		this.trackingRepository.findByIdLoader(idLoader).orElseThrow(() -> new TrackNotFoundException(idLoader));
+			Integer higherWeight = Collections.max(weightItemsAux);
+			Integer numTravels = 0;
+			Integer numItemInBox = 1;
+
+			for (int _indexWeight = 0; _indexWeight < weightItems.getValues().size(); _indexWeight++){
+				totalWeight += weightItems.getValues().get(_indexWeight);
+
+				if((higherWeight * numItemInBox) >= MIN_WEIGHT){
+					numTravels++;
+					weightItemsAux.remove(higherWeight);
+					numItemInBox = 0;
+					if((_indexWeight + 1) < weightItems.getValues().size()){
+						higherWeight = Collections.max(weightItemsAux);
+					}else{
+						higherWeight = Collections.max(weightItemsAux);
+					}
+				}
+
+				numItemInBox++;
+			}
+
+			resultJsonDto.setId(_index + 1);
+			resultJsonDto.setMaxTravels(numTravels);
+			resultJsonDto.setTotalWeight(totalWeight);
+
+			listResultJsonDto.add(resultJsonDto);
+		}
+
+		return listResultJsonDto;
 	}
 }
